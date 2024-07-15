@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+  </head>
+  <body>
+    <form
+      action="/upload"
+      method="POST"
+      enctype="multipart/form-data"
+      onsubmit="return validateForm()"
+    >
+      <div>
+        <label for="files">Select file</label>
+        <input type="file" id="files" name="files" accept=".pdf" />
+      </div>
+
+      <div class="doctor-input">
+        <label for="doctor">Doctor's Email</label>
+        <input
+          type="text"
+          id="doctor"
+          name="doctor"
+          placeholder="Enter doctor's email"
+        />
+      </div>
+      <div class="btn-main">
+        <button type="button" onclick="addDoctor()">Add Doctor</button>
+        <button type="submit">Upload and Send</button>
+      </div>
+    </form>
+
+    <div class="table-main">
+      <table>
+        <thead>
+          <tr>
+            <th class="text-start">#</th>
+            <th>Doctor's Name</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="doctorsTableBody"></tbody>
+      </table>
+    </div>
+  </body>
+
+  <script>
+    async function addDoctor() {
+      const doctorName = document.getElementById("doctor").value;
+
+      if (!doctorName) {
+        alert("Doctor's name can not be empty.");
+        return;
+      }
+      const response = await fetch("/add-doctor", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ doctor: doctorName }),
+      });
+
+      if (response.ok) {
+        const newRow = `
+            <tr>
+              <td>${
+                document.getElementById("doctorsTableBody").rows.length + 1
+              }</td>
+              <td>${doctorName}</td>
+               <td>
+              <div class='remove-btn'>
+                <button onclick="removeDoctor(this)">Remove</button>
+              </div>
+            </td>
+            </tr>
+          `;
+        document.getElementById("doctorsTableBody").innerHTML += newRow;
+        document.getElementById("doctor").value = "";
+      } else {
+        console.error("Failed to add doctor:", response.statusText);
+      }
+    }
+
+    function checkFormValidity() {
+      const filesInput = document.getElementById("files");
+      const uploadBtn = document.getElementById("uploadBtn");
+      const doctorsListRows = document.getElementById("doctorsTableBody").rows;
+
+      if (doctorsListRows.length > 0 && filesInput.files.length > 0) {
+        uploadBtn.disabled = false;
+      } else {
+        uploadBtn.disabled = true;
+      }
+    }
+
+    function removeDoctor(button) {
+      const row = button.closest("tr");
+      row.remove();
+      checkFormValidity();
+    }
+
+    function validateForm() {
+      const doctorsListRows = document.getElementById("doctorsTableBody").rows;
+      const filesInput = document.getElementById("files");
+
+      if (doctorsListRows.length === 0 || filesInput.files.length === 0) {
+        alert("Please add at least one doctor and select a file.");
+        return false;
+      }
+      return true;
+    }
+
+    document
+      .getElementById("files")
+      .addEventListener("change", checkFormValidity);
+  </script>
+</html>

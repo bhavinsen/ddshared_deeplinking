@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.ddShared.app",
+      "sha256_cert_fingerprints": [
+        "SHA-256: A4:CA:78:FD:1D:B4:81:10:D8:95:35:CC:32:EA:1C:67:6B:35:14:EC:0A:00:F2:8D:66:1D:AB:28:D3:1E:46:89",
+        "SHA1: 4B:24:3D:C2:0E:9E:37:F8:58:92:E1:58:48:99:0A:01:E1:99:5D:39"
+      ]
+    }
+  }
+]
