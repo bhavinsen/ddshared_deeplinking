@@ -37,7 +37,7 @@ const transporter = nodemailer.createTransport({
 let doctorsList = [];
 
 router.get("/", function (req, res, next) {
-  res.render("index", { title: "Express" });
+  res.render("index", { title: "DDShared" });
 });
 
 router.post("/upload", upload.array("files"), async (req, res) => {

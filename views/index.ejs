@@ -3,13 +3,36 @@
   <head>
     <title><%= title %></title>
     <link rel="stylesheet" href="/stylesheets/style.css" />
+    <style>
+      #loadingIndicator {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: #fff;
+        text-align: center;
+        font-size: 1.5em;
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .disabled {
+        pointer-events: none;
+        opacity: 0.5;
+      }
+    </style>
   </head>
   <body>
     <form
+      id="uploadForm"
       action="/upload"
       method="POST"
       enctype="multipart/form-data"
-      onsubmit="return validateForm()"
+      onsubmit="return handleFormSubmit()"
     >
       <div>
         <label for="files">Select file</label>
@@ -27,7 +50,9 @@
       </div>
       <div class="btn-main">
         <button type="button" onclick="addDoctor()">Add Doctor</button>
-        <button type="submit">Upload and Send</button>
+        <button type="submit" id="uploadBtn" class="loading">
+          Upload and Send
+        </button>
       </div>
     </form>
 
@@ -43,11 +68,15 @@
         <tbody id="doctorsTableBody"></tbody>
       </table>
     </div>
+
+    <!-- Loading indicator -->
+    <div id="loadingIndicator">Uploading file...</div>
   </body>
 
   <script>
     async function addDoctor() {
       const doctorName = document.getElementById("doctor").value;
+      const uploadBtn = document.querySelector("button[type='submit']");
 
       if (!doctorName) {
         alert("Doctor's name can not be empty.");
@@ -63,18 +92,18 @@
 
       if (response.ok) {
         const newRow = `
-            <tr>
-              <td>${
-                document.getElementById("doctorsTableBody").rows.length + 1
-              }</td>
-              <td>${doctorName}</td>
-               <td>
-              <div class='remove-btn'>
-                <button onclick="removeDoctor(this)">Remove</button>
-              </div>
-            </td>
-            </tr>
-          `;
+        <tr>
+          <td>${
+            document.getElementById("doctorsTableBody").rows.length + 1
+          }</td>
+          <td>${doctorName}</td>
+          <td>
+            <div class='remove-btn'>
+              <button onclick="removeDoctor(this)">Remove</button>
+            </div>
+          </td>
+        </tr>
+      `;
         document.getElementById("doctorsTableBody").innerHTML += newRow;
         document.getElementById("doctor").value = "";
       } else {
@@ -86,12 +115,6 @@
       const filesInput = document.getElementById("files");
       const uploadBtn = document.getElementById("uploadBtn");
       const doctorsListRows = document.getElementById("doctorsTableBody").rows;
-
-      if (doctorsListRows.length > 0 && filesInput.files.length > 0) {
-        uploadBtn.disabled = false;
-      } else {
-        uploadBtn.disabled = true;
-      }
     }
 
     function removeDoctor(button) {
@@ -109,6 +132,43 @@
         return false;
       }
       return true;
+    }
+
+    async function handleFormSubmit() {
+      if (!validateForm()) {
+        return false;
+      }
+
+      const form = document.getElementById("uploadForm");
+      const elements = form.elements;
+      const submitBtn = document.getElementById("uploadBtn");
+
+      document.getElementById("loadingIndicator").style.display = "block";
+      document.getElementById("loadingIndicator").style.display = "flex";
+      form.classList.add("disabled");
+
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch("/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok) {
+          alert("File uploaded successfully!");
+        } else {
+          alert("Failed to upload file.");
+        }
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        alert("An error occurred while uploading the file.");
+      } finally {
+        document.getElementById("loadingIndicator").style.display = "none";
+        form.classList.remove("disabled");
+      }
+
+      return false;
     }
 
     document
